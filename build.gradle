@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'org.openjfx.javafxplugin' version '0.0.13'
+}
+
+group = 'ch.bbcag'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+javafx {
+    modules = [ 'javafx.controls', 'javafx.media', 'javafx.graphics']
+}
+
+mainClassName = "ch.bbcag.main.Launcher"
+
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    manifest{
+        attributes 'Main-Class': 'ch.bbcag.ae.Launcher'
+    }
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
