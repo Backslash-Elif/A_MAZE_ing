@@ -25,7 +25,7 @@ public class TitleScene extends SceneExtension {
         //Title
         Label title = createLabel("A-MAZE-ing", ItemCreator.LabelType.HEADING1);
         Button start = createButton("Run", ItemCreator.ButtonType.NORMAL);
-        Label info = new Label("While running press ESC to return.");
+        Label info = new Label("While running: ESC to return, I for info, P for pause");
         Button configure = createButton("Configure...", ItemCreator.ButtonType.MEDIUM);
         Button exit = createButton("Exit", ItemCreator.ButtonType.SMALL);
 

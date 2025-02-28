@@ -25,20 +25,21 @@ public class MainScene extends SceneExtension{
 
         sceneNavigator.getPrimaryStage().sizeToScene();
 
-        renderer = new MazeRenderer(sDTO);
+        renderer = new MazeRenderer(sDTO, sceneNavigator.getDataObject());
         sceneNavigator.getSceneController().getGameObjects().add(renderer);
 
         this.setOnKeyPressed((e) -> {
-            sceneNavigator.getDataObject().getKeysPressed().add(e.getCode());
+            sceneNavigator.getDataObject().addKey(e.getCode());
         });
         this.setOnKeyReleased((e) -> {
-            sceneNavigator.getDataObject().getKeysPressed().remove(e.getCode());
+            sceneNavigator.getDataObject().removeKey(e.getCode());
         });
     }
 
     @Override
     public void update(double deltaInSec) {
-        if (sceneNavigator.getDataObject().getKeysPressed().contains(KeyCode.ESCAPE)) {
+        if (sceneNavigator.getDataObject().getKeyTyped() == KeyCode.ESCAPE) {
+            sceneNavigator.getDataObject().resetKeyTyped();
             sceneNavigator.switchScene(SceneNavigator.Scenes.TITLE);
         }
     }

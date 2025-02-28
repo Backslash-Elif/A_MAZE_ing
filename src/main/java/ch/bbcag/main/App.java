@@ -5,7 +5,10 @@ import ch.bbcag.common.SceneNavigator;
 import javafx.application.Application;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
+
+import java.awt.*;
 
 public class App extends Application {
     private final DataObject dataObject = new DataObject();

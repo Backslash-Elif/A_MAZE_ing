@@ -1,50 +1,92 @@
 package ch.bbcag.gameobjects;
 
+import ch.bbcag.common.DataObject;
 import ch.bbcag.common.SettingsDTO;
 import ch.bbcag.simulation.Node;
 import ch.bbcag.simulation.NodeController;
 import ch.bbcag.simulation.NodeStatus;
 import ch.bbcag.simulation.NodeWall;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 public class MazeRenderer extends GameObject {
     private NodeController nodeController;
     private final SettingsDTO sDTO;
+    private final DataObject dataObject;
     private final int nodeSize;
     private double tickSpeed;
 
     private double delta = 0;
 
-    public MazeRenderer(SettingsDTO sDTO) {
+    private boolean paused = false;
+    private boolean showinfo = false;
+
+    private String infoText = "";
+
+    public MazeRenderer(SettingsDTO sDTO, DataObject dataObject) {
         this.nodeController = new NodeController(sDTO.getX(), sDTO.getY(), sDTO.getAlgorithmType());
         this.sDTO = sDTO;
+        this.dataObject = dataObject;
         this.nodeSize = sDTO.getNodeSize();
         this.tickSpeed = sDTO.getGenerationTickSpeed(); // initially
+
+        dataObject.getGraphicsContext().setFont(Font.font("Ariala", FontWeight.BOLD, 16));
     }
 
     @Override
     public void update(double deltaInSec) {
-        delta+= deltaInSec;
-        if (delta >= tickSpeed) {
-            int iterations = 1;
-            if (tickSpeed <= -1) {
-                iterations = (int) Math.abs(tickSpeed);
-            }
-            for (int i = 0; i < iterations; i++) {
-                nodeController.tick();
-            }
-            if (nodeController.isGenerationCompleted()) {
-                tickSpeed = sDTO.getSolveTickSpeed();
-            }
-            if (nodeController.isSolveCompleted() && sDTO.isAutoRestart()) {
-                tickSpeed = sDTO.getAutoRestartTimer();
-                if (delta >= tickSpeed) {
-                    nodeController = new NodeController(sDTO.getX(), sDTO.getY(), sDTO.getAlgorithmType()); //restart after delay
-                    tickSpeed = sDTO.getGenerationTickSpeed();
+        if (dataObject.getKeyTyped() == KeyCode.P) {
+            dataObject.resetKeyTyped();
+            paused = !paused;
+        }
+        if (dataObject.getKeyTyped() == KeyCode.I) {
+            dataObject.resetKeyTyped();
+            showinfo = !showinfo;
+        }
+
+        if (!paused) {
+            delta+= deltaInSec;
+            if (delta >= tickSpeed) {
+                int iterations = 1;
+                if (tickSpeed <= -1) {
+                    iterations = (int) Math.abs(tickSpeed);
                 }
+                for (int i = 0; i < iterations; i++) {
+                    nodeController.tick();
+                }
+                if (nodeController.isGenerationCompleted()) {
+                    tickSpeed = sDTO.getSolveTickSpeed();
+                }
+                if (nodeController.isSolveCompleted() && sDTO.isAutoRestart()) {
+                    tickSpeed = sDTO.getAutoRestartTimer();
+                    if (delta >= tickSpeed) {
+                        nodeController = new NodeController(sDTO.getX(), sDTO.getY(), sDTO.getAlgorithmType()); //restart after delay
+                        tickSpeed = sDTO.getGenerationTickSpeed();
+                    }
+                }
+                delta = 0;
             }
-            delta = 0;
+        }
+
+        if (showinfo) {
+            String text = "Iteration: " + nodeController.getIteration();
+            text += "\nEmpty: " + nodeController.getEmptyCount();
+            text += "\nPath: " + nodeController.getTouchCount();
+            text += "\nBacktracked: " + nodeController.getBackTrackCount();
+            if (nodeController.isGenerationCompleted()) {
+                text = "Task: Solve\n" + text;
+                float ratio = nodeController.getTouchCount() > 0
+                        ? Math.round((1 - ((float) nodeController.getBackTrackCount() / (nodeController.getTouchCount() + nodeController.getBackTrackCount()))) * 10000) / 100.0f
+                        : 100.0f;
+                text += "\nEfficiency: " + ratio + "%"; // to round to 2 digits
+            } else {
+                text = "Task: Generate\n" + text;
+                text += "\nProgress: " + (Math.round(((float) (nodeController.getTouchCount() + nodeController.getBackTrackCount()) / (nodeController.getxSize() * nodeController.getySize())) * 10000) / 100.0) + "%"; // to round to 2 digits
+            }
+            infoText = text;
         }
     }
 
@@ -104,6 +146,13 @@ public class MazeRenderer extends GameObject {
                     gc.strokeLine(x * nodeSize, y * nodeSize, x * nodeSize, (y + 1) * nodeSize); // Left wall
                 }
             }
+        }
+        if (showinfo) {
+            gc.setFill(Color.WHITE);
+            gc.setLineWidth(5);
+            gc.strokeText(infoText, 5, 20);
+            gc.setFill(Color.BLACK);
+            gc.fillText(infoText, 5, 20);
         }
     }
 

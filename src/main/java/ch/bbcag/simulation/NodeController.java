@@ -22,6 +22,16 @@ public class NodeController {
     private Node startPoint;
     private Node endPoint;
 
+    // counting info
+    private int emptyCount;
+    private int touchCount;
+    private int backTrackCount;
+
+    private NodeStatus subtractCount;
+    private NodeStatus addCount;
+
+    private int iteration = 0;
+
     public NodeController(int xSize, int ySize, AlgorithmType algorithmType) {
         this.xSize = xSize;
         this.ySize = ySize;
@@ -30,6 +40,10 @@ public class NodeController {
 
         nodeGrid = new Node[ySize][xSize];
         guardNode = new Node(this, -1);
+
+        emptyCount = xSize * ySize;
+        touchCount = 0;
+        backTrackCount = 0;
 
         this.init();
     }
@@ -98,20 +112,38 @@ public class NodeController {
     }
 
     public void tick() {
+        if (solveCompleted) {
+            return;
+        }
+        iteration += 1;
         if (!generationCompleted) {
-             Node node = currentNode.generate(lastNodeId);
-             lastNodeId = currentNode.getID();
-             currentNode = node;
+            subtractCount = currentNode.getStatus();
+            Node node = currentNode.generate(lastNodeId);
+            addCount = currentNode.getStatus();
+            lastNodeId = currentNode.getID();
+            currentNode = node;
         } else {
-            if (!solveCompleted) {
-                Node node = currentNode.solve(lastNodeId);
-                lastNodeId = currentNode.getID();
-                currentNode = node;
-                if (currentNode == endPoint) {
-                    solveCompleted = true;
-                }
+            subtractCount = currentNode.getStatus();
+            Node node = currentNode.solve(lastNodeId);
+            addCount = currentNode.getStatus();
+            lastNodeId = currentNode.getID();
+            currentNode = node;
+            if (currentNode == endPoint) {
+                solveCompleted = true;
             }
         }
+
+        switch (subtractCount) {
+            case EMPTY -> emptyCount--;
+            case TOUCHED -> touchCount--;
+            case BACKTRACKED -> backTrackCount--;
+        }
+        switch (addCount) {
+            case EMPTY -> emptyCount++;
+            case TOUCHED -> touchCount++;
+            case BACKTRACKED -> backTrackCount++;
+        }
+
         int bTCounter = 0;
         for (Node[] nodes : nodeGrid) {
             for (Node node : nodes) {
@@ -129,6 +161,12 @@ public class NodeController {
                 lastNodeId = startPoint.getNeighbourN().getID();
                 currentNode = startPoint;
             }
+
+            emptyCount = xSize * ySize;
+            touchCount = 0;
+            backTrackCount = 0;
+
+            iteration = 0;
         }
     }
 
@@ -205,6 +243,14 @@ public class NodeController {
         return null; // Node not found
     }
 
+    public int getxSize() {
+        return xSize;
+    }
+
+    public int getySize() {
+        return ySize;
+    }
+
     public Node[][] getNodeGrid() {
         return nodeGrid;
     }
@@ -227,5 +273,21 @@ public class NodeController {
 
     public AlgorithmType getAlgorithmType() {
         return algorithmType;
+    }
+
+    public int getEmptyCount() {
+        return emptyCount;
+    }
+
+    public int getTouchCount() {
+        return touchCount;
+    }
+
+    public int getBackTrackCount() {
+        return backTrackCount;
+    }
+
+    public int getIteration() {
+        return iteration;
     }
 }

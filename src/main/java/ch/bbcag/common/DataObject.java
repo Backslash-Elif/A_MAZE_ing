@@ -13,6 +13,7 @@ public class DataObject {
     private GraphicsContext graphicsContext = null;
     private Canvas canvas = null;
     private final Set<KeyCode> keysPressed = new HashSet<>();
+    private KeyCode keyTyped = null;
 
     private SettingsDTO settingsDTO = new SettingsDTO();
 
@@ -36,11 +37,31 @@ public class DataObject {
         return keysPressed;
     }
 
+    public void addKey(KeyCode key) {
+        keysPressed.add(key);
+        keyTyped = key;
+    }
+
+    public void  removeKey(KeyCode key) {
+        keysPressed.remove(key);
+        if (keyTyped == key) {
+            keyTyped = null;
+        }
+    }
+
     public SettingsDTO getSettingsDTO() {
         return settingsDTO;
     }
 
     public void setSettingsDTO(SettingsDTO settingsDTO) {
         this.settingsDTO = settingsDTO;
+    }
+
+    public KeyCode getKeyTyped() {
+        return keyTyped;
+    }
+
+    public void resetKeyTyped() {
+        this.keyTyped = null;
     }
 }
