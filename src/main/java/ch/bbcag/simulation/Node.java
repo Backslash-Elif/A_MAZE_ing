@@ -9,6 +9,8 @@ public class Node {
     private final NodeController controller;
 
     private final int ID;
+    private final int xPos;
+    private final int yPos;
 
     private  Node neighbourN;
     private  Node neighbourE;
@@ -24,10 +26,12 @@ public class Node {
 
     private NodeStatus status = NodeStatus.EMPTY;
 
-    public Node(NodeController controller, int id) {
+    public Node(NodeController controller, int id, int xPos, int yPos) {
         this.controller = controller;
 
         this.ID = id;
+        this.xPos = xPos;
+        this.yPos = yPos;
     }
 
     public Node generate(int lastNode) {
@@ -271,6 +275,14 @@ public class Node {
 
     public int getID() {
         return ID;
+    }
+
+    public int getxPos() {
+        return xPos;
+    }
+
+    public int getyPos() {
+        return yPos;
     }
 
     public Node getNeighbourN() {

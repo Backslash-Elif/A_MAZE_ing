@@ -1,8 +1,6 @@
 package ch.bbcag.simulation;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class NodeController {
     private boolean generationCompleted = false;
@@ -15,6 +13,7 @@ public class NodeController {
 
     private final Node[][] nodeGrid;
     private final Node guardNode;
+    private final Set<Node> updateNodes = new HashSet<Node>();
 
     private Node currentNode;
     private int lastNodeId;
@@ -39,7 +38,7 @@ public class NodeController {
         this.algorithmType = algorithmType;
 
         nodeGrid = new Node[ySize][xSize];
-        guardNode = new Node(this, -1);
+        guardNode = new Node(this, -1, -1, -1);
 
         emptyCount = xSize * ySize;
         touchCount = 0;
@@ -59,7 +58,8 @@ public class NodeController {
 
         for (int i = 0; i < ySize; i++) {
             for (int j = 0; j < xSize; j++) {
-                nodeGrid[i][j] = new Node(this, i * ySize + j);
+                nodeGrid[i][j] = new Node(this, i * ySize + j, j, i);
+                updateNodes.add(nodeGrid[i][j]);
             }
         }
         for (int i = 0; i < ySize; i++) {
@@ -116,6 +116,12 @@ public class NodeController {
             return;
         }
         iteration += 1;
+
+        updateNodes.add(currentNode);
+        for (NodeDirection direction : NodeDirection.values()) {
+            updateNodes.add(currentNode.getNeighbourFromDir(direction));
+        }
+
         if (!generationCompleted) {
             subtractCount = currentNode.getStatus();
             Node node = currentNode.generate(lastNodeId);
@@ -157,6 +163,7 @@ public class NodeController {
             for (Node[] nodes : nodeGrid) {
                 for (Node node : nodes) {
                     node.setStatus(NodeStatus.EMPTY);
+                    updateNodes.add(node);
                 }
                 lastNodeId = startPoint.getNeighbourN().getID();
                 currentNode = startPoint;
@@ -253,6 +260,10 @@ public class NodeController {
 
     public Node[][] getNodeGrid() {
         return nodeGrid;
+    }
+
+    public Set<Node> getUpdateNodes() {
+        return updateNodes;
     }
 
     public Node getStartPoint() {
